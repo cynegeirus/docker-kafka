@@ -1,0 +1,62 @@
+version: '3.8'
+
+networks:
+  mq-net:
+    driver: bridge
+
+volumes:
+  mq-data:
+
+services:
+  kafka:
+    image: confluentinc/cp-kafka:7.8.0
+    container_name: kafka
+    hostname: kafka.cynegeirus.local
+    restart: always
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_BROKER_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka.cynegeirus.local:9093'
+      KAFKA_LISTENERS: >-
+        PLAINTEXT://0.0.0.0:9092,
+        CONTROLLER://kafka.cynegeirus.local:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://YOUR_IP_ADDRESS:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      CLUSTER_ID: 'EmptNWtoR4GGWx-BH6nGLQ'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    volumes:
+      - mq-data:/var/lib/kafka/data
+    networks:
+      - mq-net
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    hostname: kafka-ui.cynegeirus.local
+    restart: always
+    ports:
+      - "9091:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: YOUR_IP_ADDRESS:9092
+      DYNAMIC_CONFIG_ENABLED: "true"
+      SERVER_PORT: 8080
+      POLL_INTERVAL_MS: 3000
+      AUTH_TYPE: "LOGIN_FORM"
+      SPRING_SECURITY_USER_NAME: admin
+      SPRING_SECURITY_USER_PASSWORD: 'YOUR_PASSWORD'
+    depends_on:
+      - kafka
+    networks:
+      - mq-net
+
+Bunu benim için düzenleyip güzel bir github'ım için README.md hazırlar mısın? 
